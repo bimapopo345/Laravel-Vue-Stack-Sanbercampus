@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
+use App\Models\Profile;
+
 
 class AuthController extends Controller
 {
@@ -17,41 +19,50 @@ class AuthController extends Controller
      * Register a new user
      */
     public function register(Request $request)
-    {
-        // Validation
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:6|confirmed',
-        ]);
+{
+    // Validasi input
+    $validator = Validator::make($request->all(), [
+        'name' => 'required|string|max:255',
+        'email' => 'required|string|email|max:255|unique:users',
+        'password' => 'required|string|min:6|confirmed',
+    ]);
 
-        if($validator->fails()){
-            return response()->json($validator->errors(), 422);
-        }
-
-        // Assign 'user' role
-        $role = Role::where('name', 'user')->first();
-
-        // Create user
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role_id' => $role->id,
-        ]);
-
-        // Generate OTP
-        $otp = mt_rand(100000, 999999);
-        $otpCode = OtpCode::create([
-            'otp' => $otp,
-            'valid_until' => Carbon::now()->addMinutes(10),
-            'user_id' => $user->id,
-        ]);
-
-        // TODO: Send OTP via email or SMS
-
-        return response()->json(['message' => 'User registered successfully. Please verify your account.', 'otp' => $otp], 201);
+    if($validator->fails()){
+        return response()->json($validator->errors(), 422);
     }
+
+    // Mengambil peran 'user'
+    $role = Role::where('name', 'user')->first();
+
+    // Membuat pengguna
+    $user = User::create([
+        'name' => $request->name,
+        'email' => $request->email,
+        'password' => Hash::make($request->password),
+        'role_id' => $role->id,
+    ]);
+
+    // Membuat profil kosong untuk pengguna
+    Profile::create([
+        'user_id' => $user->id,
+        'bio' => null,
+        'age' => null,
+        'image' => null,
+    ]);
+
+    // Menghasilkan OTP
+    $otp = mt_rand(100000, 999999);
+    $otpCode = OtpCode::create([
+        'otp' => $otp,
+        'valid_until' => Carbon::now()->addMinutes(10),
+        'user_id' => $user->id,
+    ]);
+
+    // TODO: Kirim OTP via email atau SMS
+
+    return response()->json(['message' => 'User registered successfully. Please verify your account.', 'otp' => $otp], 201);
+}
+
 
     /**
      * Login user and return JWT token
