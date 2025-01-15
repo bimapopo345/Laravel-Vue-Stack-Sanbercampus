@@ -1,16 +1,22 @@
 # Laravel Vue Stack Sanbercampus
 Laravel Vue Stack Sanbercampus adalah sebuah proyek yang dibangun dengan Laravel sebagai backend dan Vue.js sebagai frontend. Proyek ini memiliki fitur autentikasi, verifikasi email, dan manajemen produk, kategori, dan order.
 
-## API Dokumentasi
-API dokumentasi dapat diakses pada [https://documenter.getpostman.com/view/30209921/2sAYQXpt6H#f3ee72d2-ae30-4b21-abe9-106016ac75f6](https://documenter.getpostman.com/view/30209921/2sAYQXpt6H#f3ee72d2-ae30-4b21-abe9-106016ac75f6)
+Proyek ini dibangun dengan menggunakan Laravel 9 dan Vue.js 3, yang memungkinkan pengembangan aplikasi web yang cepat, aman, dan scalable. Proyek ini dirancang untuk memenuhi kebutuhan bisnis yang memerlukan sistem manajemen yang efektif dan efisien.
 
-## Tentang Proyek
-Proyek ini dibangun dengan menggunakan Laravel 9 dan Vue.js 3. Proyek ini memiliki beberapa fitur, seperti:
-* Autentikasi dengan JWT
-* Verifikasi email
-* Manajemen produk
-* Manajemen kategori
-* Manajemen order
+Proyek ini memiliki beberapa fitur, seperti autentikasi dengan JWT, verifikasi email, manajemen produk, manajemen kategori, dan manajemen order. Fitur-fitur ini memungkinkan pengguna untuk melakukan login, mengelola produk, kategori, dan order dengan mudah dan aman.
+
+Proyek ini juga memiliki dokumentasi API yang lengkap, sehingga memudahkan pengembang lain untuk mengintegrasikan aplikasi ini dengan aplikasi lainnya. Dokumentasi API dapat diakses pada [https://documenter.getpostman.com/view/30209921/2sAYQXpt6H#f3ee72d2-ae30-4b21-abe9-106016ac75f6](https://documenter.getpostman.com/view/30209921/2sAYQXpt6H#f3ee72d2-ae30-4b21-abe9-106016ac75f6).
+
+## Table of Contents
+- [Tentang Proyek](#tentang-proyek)
+- [Fitur dan Fungsi](#fitur-dan-fungsi)
+- [Teknologi Stack](#teknologi-stack)
+- [Prasyarat](#prasyarat)
+- [Instalasi](#instalasi)
+- [Penggunaan](#penggunaan)
+- [API Dokumentasi](#api-dokumentasi)
+- [Lisensi](#lisensi)
+- [Kontak](#kontak)
 
 ## Fitur dan Fungsi
 Berikut adalah beberapa fitur dan fungsi yang ada dalam proyek ini:
@@ -72,6 +78,9 @@ Berikut adalah langkah-langkah untuk menggunakan proyek ini:
 * **Manajemen Produk**: Admin dapat melakukan CRUD pada produk.
 * **Manajemen Kategori**: Admin dapat melakukan CRUD pada kategori.
 * **Manajemen Order**: Admin dapat melakukan CRUD pada order.
+
+## API Dokumentasi
+API dokumentasi dapat diakses pada [https://documenter.getpostman.com/view/30209921/2sAYQXpt6H#f3ee72d2-ae30-4b21-abe9-106016ac75f6](https://documenter.getpostman.com/view/30209921/2sAYQXpt6H#f3ee72d2-ae30-4b21-abe9-106016ac75f6)
 
 ## Lisensi
 Proyek ini menggunakan lisensi MIT.
