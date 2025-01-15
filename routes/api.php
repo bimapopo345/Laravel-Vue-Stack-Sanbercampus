@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\VerificationController;
@@ -9,17 +8,6 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ProfileController;
-
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and assigned to the "api"
-| middleware group. Enjoy building your API!
-|
-*/
 
 // Public Routes
 Route::post('/register', [AuthController::class, 'register']);
