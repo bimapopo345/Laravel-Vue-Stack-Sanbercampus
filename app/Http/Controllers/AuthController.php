@@ -106,9 +106,9 @@ public function register(Request $request)
      * Get the authenticated User
      */
     public function me()
-{
-    return response()->json(auth()->user()->load('role'), 200);
-}
+    {
+        return response()->json(auth()->user()->load(['role', 'profile']), 200);
+    }
 
     /**
      * Refresh a token.
@@ -127,7 +127,7 @@ public function register(Request $request)
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => JWTAuth::factory()->getTTL() * 60,
-            'user' => auth()->user()->load('role'), // Memuat relasi role
+            'user' => auth()->user()->load(['role', 'profile']),
         ]);
     }
 }

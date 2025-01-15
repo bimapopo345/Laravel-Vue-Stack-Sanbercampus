@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Log;
+use DB;
 
 class ProductController extends Controller
 {
@@ -86,58 +87,55 @@ class ProductController extends Controller
      */
     public function update(Request $request, $id)
 {
-    // Tambahkan logging untuk data yang diterima
-    Log::info('Update Request Data:', $request->all());
-
-    $product = Product::find($id);
-    if (!$product) {
-        return response()->json(['message' => 'Produk tidak ditemukan.'], 404);
-    }
-
-    $validator = Validator::make($request->all(), [
-        'name'        => 'sometimes|required|string|max:255',
-        'price'       => 'sometimes|required|integer|min:0',
-        'description' => 'nullable|string',
-        'image'       => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        'stock'       => 'sometimes|required|integer|min:0',
-        'category_id' => 'sometimes|required|uuid|exists:categories,id',
-    ]);
-
-    if ($validator->fails()) {
-        return response()->json($validator->errors(), 422);
-    }
-
-    $data = $request->only(['name','price','description','stock','category_id']);
-
-    // Tambahkan logging sebelum update
-    Log::info('Data yang akan diupdate:', $data);
-
-    // Handle image upload
-    if ($request->hasFile('image')) {
-        try {
-            Log::info('Mulai mengupload gambar ke Cloudinary.');
-            $uploadedFile = Cloudinary::upload($request->file('image')->getRealPath(), [
-                'folder' => 'products',
-            ]);
-            $uploadedFileUrl = $uploadedFile->getSecurePath();
-            $data['image'] = $uploadedFileUrl;
-            Log::info('Gambar berhasil diupload: ' . $uploadedFileUrl);
-        } catch (\Exception $e) {
-            Log::error('Error saat mengupload gambar ke Cloudinary: ' . $e->getMessage());
-            return response()->json(['message' => 'Gagal mengupload gambar.'], 500);
+    DB::beginTransaction();
+    try {
+        $product = Product::find($id);
+        if(!$product){
+            return response()->json(['message' => 'Product not found.'], 404);
         }
+
+        // Validasi input
+        $validator = Validator::make($request->all(), [
+            'name'        => 'sometimes|required|string|max:255',
+            'price'       => 'sometimes|required|integer|min:0',
+            'description' => 'nullable|string',
+            'image'       => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'stock'       => 'sometimes|required|integer|min:0',
+            'category_id' => 'sometimes|required|uuid|exists:categories,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        $data = $request->only(['name','price','description','stock','category_id']);
+
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            try {
+                $uploadedFile = Cloudinary::upload($request->file('image')->getRealPath(), [
+                    'folder' => 'products',
+                ]);
+                $uploadedFileUrl = $uploadedFile->getSecurePath();
+                $data['image'] = $uploadedFileUrl;
+            } catch (\Exception $e) {
+                return response()->json(['message' => 'Failed to upload image.'], 500);
+            }
+        }
+
+        $product->update($data);
+        $product->refresh();
+
+        DB::commit();
+
+        return response()->json([
+            'message' => 'Product updated successfully.',
+            'product' => $product
+        ], 200);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return response()->json(['message' => 'Failed to update product.'], 500);
     }
-
-    $product->update($data);
-    $product->refresh();
-
-    // Tambahkan logging setelah update
-    Log::info('Produk setelah diupdate:', $product->toArray());
-
-    return response()->json([
-        'message' => 'Produk berhasil diperbarui.',
-        'product' => $product
-    ], 200);
 }
 
 
