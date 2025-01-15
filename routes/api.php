@@ -37,8 +37,8 @@ Route::middleware(['auth:api'])->group(function () {
     Route::middleware([IsAdmin::class])->group(function () {
         // Product CRUD
         Route::post('/products', [ProductController::class, 'store']);
-        Route::put('/products/{id}', [ProductController::class, 'update']);
-        Route::delete('/products/{id}', [ProductController::class, 'destroy']);
+        Route::put('/products/{product}', [ProductController::class, 'update']);
+        Route::delete('/products/{product}', [ProductController::class, 'destroy']);
 
         // Category CRUD
         Route::post('/categories', [CategoryController::class, 'store']);
