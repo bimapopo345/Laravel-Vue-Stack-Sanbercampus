@@ -15,40 +15,36 @@ use App\Http\Controllers\ProfileController;
 | API Routes
 |--------------------------------------------------------------------------
 |
-| Here is where you can register API routes for your application.
+| Here is where you can register API routes for your application. These
+| routes are loaded by the RouteServiceProvider and assigned to the "api"
+| middleware group. Enjoy building your API!
 |
 */
 
 // Public Routes
-Route::group(['middleware' => 'api'], function ($router) {
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
-    Route::get('/products', [ProductController::class, 'index']);
-    Route::get('/products/{id}', [ProductController::class, 'show']);
-    Route::get('/categories', [CategoryController::class, 'index']);
-    Route::get('/categories/{id}', [CategoryController::class, 'show']);
-});
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+Route::get('/products', [ProductController::class, 'index']);
+Route::get('/products/{id}', [ProductController::class, 'show']);
+Route::get('/categories', [CategoryController::class, 'index']);
+Route::get('/categories/{id}', [CategoryController::class, 'show']);
 
 // Protected Routes
-Route::group(['middleware' => ['api', 'auth:api']], function ($router) {
-    // Authenticated Routes
+Route::middleware(['auth:api'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/refresh', [AuthController::class, 'refresh']);
 
-    // Verification Routes
     Route::post('/generate-otp', [VerificationController::class, 'generateOtp']);
     Route::post('/verify-otp', [VerificationController::class, 'verifyOtp']);
 
-    // Routes requiring verification
-    Route::group(['middleware' => ['verifikasi']], function ($router) {
+    Route::middleware(['verifikasi'])->group(function () {
         Route::get('/profile', [ProfileController::class, 'show']);
         Route::put('/profile', [ProfileController::class, 'update']);
         Route::post('/orders', [OrderController::class, 'store']);
     });
 
-    // Admin Routes
-    Route::group(['middleware' => ['isadmin']], function ($router) {
+    Route::middleware(['isadmin'])->group(function () {
         // Product CRUD
         Route::post('/products', [ProductController::class, 'store']);
         Route::put('/products/{id}', [ProductController::class, 'update']);
