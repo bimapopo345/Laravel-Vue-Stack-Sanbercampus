@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Order;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Models\Product; 
 
 class OrderController extends Controller
 {
@@ -34,46 +35,55 @@ class OrderController extends Controller
      * Create a new order (Verified Users)
      */
     public function store(Request $request)
-    {
-        // Validation
-        $validator = Validator::make($request->all(), [
-            'product_id' => 'required|uuid|exists:products,id',
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'address' => 'required|string',
-            'quantity' => 'required|integer|min:1',
-        ]);
+{
+    // Validasi input
+    $validator = Validator::make($request->all(), [
+        'product_id' => 'required|uuid|exists:products,id',
+        'first_name' => 'required|string|max:255',
+        'last_name' => 'required|string|max:255',
+        'address' => 'required|string',
+        'quantity' => 'required|integer|min:1',
+    ]);
 
-        if($validator->fails()){
-            return response()->json($validator->errors(), 422);
-        }
-
-        // Get authenticated user
-        $user = JWTAuth::parseToken()->authenticate();
-
-        // Get product
-        $product = $user->orders()->where('product_id', $request->product_id)->first();
-        if(!$product){
-            return response()->json(['message' => 'Product not found.'], 404);
-        }
-
-        // Calculate total price
-        $totalPrice = $product->price * $request->quantity;
-
-        // Create order
-        $order = Order::create([
-            'product_id' => $request->product_id,
-            'user_id' => $user->id,
-            'first_name' => $request->first_name,
-            'last_name' => $request->last_name,
-            'address' => $request->address,
-            'quantity' => $request->quantity,
-            'total_price' => $totalPrice,
-            'status' => 'pending',
-        ]);
-
-        return response()->json(['message' => 'Order created successfully.', 'order' => $order], 201);
+    if($validator->fails()){
+        return response()->json($validator->errors(), 422);
     }
+
+    // Mendapatkan pengguna yang terautentikasi
+    $user = JWTAuth::parseToken()->authenticate();
+
+    // Mendapatkan produk secara langsung dari model Product
+    $product = Product::find($request->product_id);
+    if(!$product){
+        return response()->json(['message' => 'Product not found.'], 404);
+    }
+
+    // Memeriksa stok produk
+    if($product->stock < $request->quantity){
+        return response()->json(['message' => 'Insufficient stock.'], 400);
+    }
+
+    // Menghitung total harga
+    $totalPrice = $product->price * $request->quantity;
+
+    // Mengurangi stok produk
+    $product->stock -= $request->quantity;
+    $product->save();
+
+    // Membuat pesanan
+    $order = Order::create([
+        'product_id' => $request->product_id,
+        'user_id' => $user->id,
+        'first_name' => $request->first_name,
+        'last_name' => $request->last_name,
+        'address' => $request->address,
+        'quantity' => $request->quantity,
+        'total_price' => $totalPrice,
+        'status' => 'pending',
+    ]);
+
+    return response()->json(['message' => 'Order created successfully.', 'order' => $order], 201);
+}
 
     /**
      * Update order status (Admin)

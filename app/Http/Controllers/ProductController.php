@@ -86,18 +86,20 @@ class ProductController extends Controller
      */
     public function update(Request $request, $id)
 {
+    // Tambahkan logging untuk data yang diterima
+    Log::info('Update Request Data:', $request->all());
+
     $product = Product::find($id);
     if (!$product) {
         return response()->json(['message' => 'Produk tidak ditemukan.'], 404);
     }
 
-    // Validasi
     $validator = Validator::make($request->all(), [
-        'name' => 'sometimes|required|string|max:255',
-        'price' => 'sometimes|required|integer|min:0',
+        'name'        => 'sometimes|required|string|max:255',
+        'price'       => 'sometimes|required|integer|min:0',
         'description' => 'nullable|string',
-        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        'stock' => 'sometimes|required|integer|min:0',
+        'image'       => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'stock'       => 'sometimes|required|integer|min:0',
         'category_id' => 'sometimes|required|uuid|exists:categories,id',
     ]);
 
@@ -105,15 +107,17 @@ class ProductController extends Controller
         return response()->json($validator->errors(), 422);
     }
 
-    // Siapkan data yang akan diperbarui
-    $data = $request->only(['name', 'price', 'description', 'stock', 'category_id']);
+    $data = $request->only(['name','price','description','stock','category_id']);
 
-    // Tangani pengunggahan gambar jika ada
+    // Tambahkan logging sebelum update
+    Log::info('Data yang akan diupdate:', $data);
+
+    // Handle image upload
     if ($request->hasFile('image')) {
         try {
-            Log::info('Mulai mengupload gambar ke Cloudinary untuk produk ID: ' . $id);
+            Log::info('Mulai mengupload gambar ke Cloudinary.');
             $uploadedFile = Cloudinary::upload($request->file('image')->getRealPath(), [
-                'folder' => 'products', // Tentukan folder di Cloudinary
+                'folder' => 'products',
             ]);
             $uploadedFileUrl = $uploadedFile->getSecurePath();
             $data['image'] = $uploadedFileUrl;
@@ -124,14 +128,19 @@ class ProductController extends Controller
         }
     }
 
-    // Perbarui produk dengan data yang telah disiapkan
     $product->update($data);
-
-    // Refresh model untuk mendapatkan data terbaru
     $product->refresh();
 
-    return response()->json(['message' => 'Produk berhasil diperbarui.', 'product' => $product], 200);
+    // Tambahkan logging setelah update
+    Log::info('Produk setelah diupdate:', $product->toArray());
+
+    return response()->json([
+        'message' => 'Produk berhasil diperbarui.',
+        'product' => $product
+    ], 200);
 }
+
+
 
 
 public function destroy(Product $product)
