@@ -7,6 +7,8 @@ use App\Models\Profile;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use Illuminate\Support\Facades\Auth;
+use Log;
 
 class ProfileController extends Controller
 {
@@ -15,25 +17,28 @@ class ProfileController extends Controller
      */
     // app/Http/Controllers/ProfileController.php
 
-public function show()
-{
-    try {
-        $user = JWTAuth::parseToken()->authenticate();
-    } catch (\Exception $e) {
-        return response()->json(['message' => 'Token tidak valid atau tidak disediakan'], 401);
+    public function show()
+    {
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            Log::info('Fetching profile for user.', ['user_id' => $user->id]);
+        } catch (\Exception $e) {
+            Log::error('Token invalid or not provided.', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Token tidak valid atau tidak disediakan'], 401);
+        }
+    
+        $profile = $user->profile;
+    
+        if (!$profile) {
+            Log::warning('Profile not found.', ['user_id' => $user->id]);
+            return response()->json(['message' => 'Profile not found.'], 404);
+        }
+    
+        return response()->json([
+            'user' => $user,
+            'profile' => $profile,
+        ], 200);
     }
-
-    $profile = $user->profile;
-
-    if (!$profile) {
-        return response()->json(['message' => 'Profile not found.'], 404);
-    }
-
-    return response()->json([
-        'user' => $user,
-        'profile' => $profile,
-    ], 200);
-}
 
 
     /**

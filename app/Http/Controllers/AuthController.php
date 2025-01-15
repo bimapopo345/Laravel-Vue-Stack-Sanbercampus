@@ -18,7 +18,9 @@ class AuthController extends Controller
     /**
      * Register a new user
      */
-    public function register(Request $request)
+   // app/Http/Controllers/AuthController.php
+
+public function register(Request $request)
 {
     // Validasi input
     $validator = Validator::make($request->all(), [
@@ -60,8 +62,20 @@ class AuthController extends Controller
 
     // TODO: Kirim OTP via email atau SMS
 
-    return response()->json(['message' => 'User registered successfully. Please verify your account.', 'otp' => $otp], 201);
+    // Menghasilkan token JWT
+    $token = JWTAuth::fromUser($user);
+
+    return response()->json([
+        'message' => 'User registered successfully. Please verify your account.',
+        'otp' => $otp,
+        'access_token' => $token,
+        'token_type' => 'bearer',
+        'expires_in' => JWTAuth::factory()->getTTL() * 60,
+        'user' => $user,
+        'profile' => $user->profile,
+    ], 201);
 }
+
 
 
     /**
