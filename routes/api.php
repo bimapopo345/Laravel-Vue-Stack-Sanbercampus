@@ -9,6 +9,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Middleware\Verifikasi;
+use App\Http\Middleware\IsAdmin;
 
 // Public Routes
 Route::post('/register', [AuthController::class, 'register']);
@@ -33,7 +34,7 @@ Route::middleware(['auth:api'])->group(function () {
         Route::post('/orders', [OrderController::class, 'store']);
     });
 
-    Route::middleware(['isadmin'])->group(function () {
+    Route::middleware([IsAdmin::class])->group(function () {
         // Product CRUD
         Route::post('/products', [ProductController::class, 'store']);
         Route::put('/products/{id}', [ProductController::class, 'update']);

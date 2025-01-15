@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\Product;
 use Illuminate\Support\Facades\Validator;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
@@ -35,7 +37,7 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        // Validation
+        // Validasi input
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'price' => 'required|integer|min:0',
@@ -51,12 +53,22 @@ class ProductController extends Controller
 
         // Handle image upload
         if($request->hasFile('image')){
-            $uploadedFileUrl = Cloudinary::upload($request->file('image')->getRealPath())->getSecurePath();
+            try {
+                Log::info('Mulai mengupload gambar ke Cloudinary.');
+                $uploadedFile = Cloudinary::upload($request->file('image')->getRealPath(), [
+                    'folder' => 'products', // Optional: Tentukan folder di Cloudinary
+                ]);
+                $uploadedFileUrl = $uploadedFile->getSecurePath();
+                Log::info('Gambar berhasil diupload: ' . $uploadedFileUrl);
+            } catch (\Exception $e) {
+                Log::error('Error saat mengupload gambar ke Cloudinary: ' . $e->getMessage());
+                return response()->json(['message' => 'Gagal mengupload gambar.'], 500);
+            }
         } else {
             $uploadedFileUrl = null;
         }
 
-        // Create product
+        // Buat produk
         $product = Product::create([
             'name' => $request->name,
             'price' => $request->price,
@@ -66,7 +78,7 @@ class ProductController extends Controller
             'category_id' => $request->category_id,
         ]);
 
-        return response()->json(['message' => 'Product created successfully.', 'product' => $product], 201);
+        return response()->json(['message' => 'Produk berhasil dibuat.', 'product' => $product], 201);
     }
 
     /**
@@ -76,10 +88,10 @@ class ProductController extends Controller
     {
         $product = Product::find($id);
         if(!$product){
-            return response()->json(['message' => 'Product not found.'], 404);
+            return response()->json(['message' => 'Produk tidak ditemukan.'], 404);
         }
 
-        // Validation
+        // Validasi
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|required|string|max:255',
             'price' => 'sometimes|required|integer|min:0',
@@ -95,14 +107,24 @@ class ProductController extends Controller
 
         // Handle image upload
         if($request->hasFile('image')){
-            $uploadedFileUrl = Cloudinary::upload($request->file('image')->getRealPath())->getSecurePath();
-            $product->image = $uploadedFileUrl;
+            try {
+                Log::info('Mulai mengupload gambar ke Cloudinary untuk produk ID: ' . $id);
+                $uploadedFile = Cloudinary::upload($request->file('image')->getRealPath(), [
+                    'folder' => 'products', // Optional: Tentukan folder di Cloudinary
+                ]);
+                $uploadedFileUrl = $uploadedFile->getSecurePath();
+                $product->image = $uploadedFileUrl;
+                Log::info('Gambar berhasil diupload: ' . $uploadedFileUrl);
+            } catch (\Exception $e) {
+                Log::error('Error saat mengupload gambar ke Cloudinary: ' . $e->getMessage());
+                return response()->json(['message' => 'Gagal mengupload gambar.'], 500);
+            }
         }
 
-        // Update other fields
+        // Update fields lainnya
         $product->update($request->only(['name', 'price', 'description', 'stock', 'category_id']));
 
-        return response()->json(['message' => 'Product updated successfully.', 'product' => $product], 200);
+        return response()->json(['message' => 'Produk berhasil diperbarui.', 'product' => $product], 200);
     }
 
     /**
