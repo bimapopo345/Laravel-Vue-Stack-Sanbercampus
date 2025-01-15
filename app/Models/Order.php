@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Order extends Model
 {
@@ -30,11 +31,15 @@ class Order extends Model
         parent::boot();
         static::creating(function ($model) {
             if (!$model->getKey()) {
-                $model->setAttribute($model->getKeyName(), (string) \Illuminate\Support\Str::uuid());
+                $model->setAttribute($model->getKeyName(), (string) Str::uuid());
+            }
+            if (!$model->order_id) {
+                $model->order_id = mt_rand(100000, 999999); // Simple random order ID
             }
         });
     }
 
+    // Relationships
     public function product()
     {
         return $this->belongsTo(Product::class, 'product_id');

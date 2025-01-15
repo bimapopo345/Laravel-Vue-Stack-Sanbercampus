@@ -11,7 +11,33 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        /**
+         * 1) Global Middleware
+         */
+        $middleware->global([
+            // Contoh: \App\Http\Middleware\PreventRequestsDuringMaintenance::class,
+        ]);
+
+        /**
+         * 2) Middleware Groups
+         */
+        $middleware->groups([
+            'web' => [
+                // Contoh: \App\Http\Middleware\EncryptCookies::class,
+            ],
+            'api' => [
+                // Middleware untuk API group, bisa ditambahkan jika diperlukan
+            ],
+        ]);
+
+        /**
+         * 3) Route Aliases
+         */
+        $middleware->aliases([
+            'auth'       => \Tymon\JWTAuth\Http\Middleware\Authenticate::class, // Middleware JWT Auth
+            'isadmin'    => \App\Http\Middleware\IsAdmin::class,
+            'verifikasi' => \App\Http\Middleware\Verifikasi::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

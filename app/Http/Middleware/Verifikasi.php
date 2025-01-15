@@ -11,10 +11,13 @@ class Verifikasi
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $user = JWTAuth::parseToken()->authenticate();
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Token not provided or invalid'], 401);
+        }
 
-        // Misal check: user harus punya email_verified_at
-        if (!$user->email_verified_at) {
+        if (!$user || !$user->email_verified_at) {
             return response()->json(['message' => 'Akun belum diverifikasi.'], 403);
         }
 

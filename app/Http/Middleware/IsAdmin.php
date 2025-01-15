@@ -9,13 +9,18 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class IsAdmin
 {
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): Response
     {
-        // ambil user dari token
-        $user = JWTAuth::parseToken()->authenticate();
-        if ($user->role->name !== 'admin') {
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Token not provided or invalid'], 401);
+        }
+
+        if (!$user || $user->role->name !== 'admin') {
             return response()->json(['message' => 'Access denied. Admin only!'], 403);
         }
+
         return $next($request);
     }
 }
