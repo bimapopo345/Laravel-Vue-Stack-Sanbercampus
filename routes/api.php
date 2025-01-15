@@ -8,6 +8,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Middleware\Verifikasi;
 
 // Public Routes
 Route::post('/register', [AuthController::class, 'register']);
@@ -26,7 +27,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('/generate-otp', [VerificationController::class, 'generateOtp']);
     Route::post('/verify-otp', [VerificationController::class, 'verifyOtp']);
 
-    Route::middleware(['verifikasi'])->group(function () {
+    Route::middleware([Verifikasi::class])->group(function () { // Gunakan nama kelas langsung
         Route::get('/profile', [ProfileController::class, 'show']);
         Route::put('/profile', [ProfileController::class, 'update']);
         Route::post('/orders', [OrderController::class, 'store']);
