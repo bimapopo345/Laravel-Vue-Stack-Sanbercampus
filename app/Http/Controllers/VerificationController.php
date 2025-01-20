@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\GenerateOtpMail;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 use App\Models\OtpCode;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Carbon\Carbon;
+use Carbon\Doctrine\CarbonType;
+use Illuminate\Support\Carbon as SupportCarbon;
 
 class VerificationController extends Controller
 {
@@ -25,11 +29,12 @@ class VerificationController extends Controller
         $otp = mt_rand(100000, 999999);
         $otpCode = OtpCode::create([
             'otp' => $otp,
-            'valid_until' => Carbon::now()->addMinutes(10),
+            'valid_until' => CarbonType::now()->addMinutes(10),
             'user_id' => $user->id,
         ]);
 
         // TODO: Send OTP via email or SMS
+        Mail::to($user->email)->send(new GenerateOtpMail($user));
 
         return response()->json(['message' => 'OTP generated successfully.', 'otp' => $otp], 200);
     }
@@ -44,18 +49,18 @@ class VerificationController extends Controller
             'otp' => 'required|integer',
         ]);
 
-        if($validator->fails()){
+        if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
 
         // Find OTP code
         $otpCode = OtpCode::where('otp', $request->otp)->latest()->first();
 
-        if(!$otpCode){
+        if (!$otpCode) {
             return response()->json(['message' => 'Invalid OTP.'], 400);
         }
 
-        if(Carbon::now()->greaterThan($otpCode->valid_until)){
+        if (Carbon::now()->greaterThan($otpCode->valid_until)) {
             return response()->json(['message' => 'OTP has expired.'], 400);
         }
 

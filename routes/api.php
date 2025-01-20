@@ -5,11 +5,13 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Middleware\Verifikasi;
 use App\Http\Middleware\IsAdmin;
+use Illuminate\Routing\Route as RoutingRoute;
 
 // Public Routes
 Route::post('/register', [AuthController::class, 'register']);
@@ -39,7 +41,7 @@ Route::middleware(['auth:api'])->group(function () {
         Route::post('/products', [ProductController::class, 'store']);
         Route::put('/products/{product}', [ProductController::class, 'update']);
         Route::delete('/products/{product}', [ProductController::class, 'destroy']);
-        
+
 
         // Category CRUD
         Route::post('/categories', [CategoryController::class, 'store']);
@@ -58,5 +60,8 @@ Route::middleware(['auth:api'])->group(function () {
         Route::get('/orders/{id}', [OrderController::class, 'show']);
         Route::put('/orders/{id}/status', [OrderController::class, 'updateStatus']);
         Route::delete('/orders/{id}', [OrderController::class, 'destroy']);
+
+        //Payment atau Checkout
+        Route::post('/checkout', [CheckoutController::class, 'checkout']);
     });
 });
